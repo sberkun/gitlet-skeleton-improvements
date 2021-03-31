@@ -39,7 +39,7 @@ This is a basic enough operation that it should be provided to students, rather 
 
 The main difference is that safeDelete can also be used to delete files in the `.gitlet` folder, so students won't have to use `file.delete()` anywhere.
 
-### Improved error messages (TODO)
+### Improved error messages
 
 Now, most functions should give actual information about what's wrong, instead of "mUsT bE a nOrMaL fIlE".
 

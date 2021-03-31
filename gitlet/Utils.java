@@ -54,6 +54,8 @@ class Utils {
         return sha1(val.getBytes(StandardCharsets.UTF_8));
     }
 
+    /* SERIALIZATION UTILITIES */
+
     /** Concatenates several byte[] or Strings into one byte[], which
      * can then be used in sha1() or writeContents()
      * Example usage: sha1(concat(fileContentBytes, "I like cheese"))
@@ -87,8 +89,6 @@ class Utils {
         return result;
     }
 
-    /* SERIALIZATION UTILITIES */
-
     /** Returns a byte array containing the serialized contents of OBJ. */
     static byte[] serialize(Serializable obj) { //TODO: test error messages
         if (obj instanceof File) {
@@ -114,7 +114,7 @@ class Utils {
      *  if FILE was deleted, and false otherwise.  Refuses to delete FILE
      *  and throws IllegalArgumentException unless the directory designated by
      *  FILE also contains a directory named .gitlet, or file is in .gitlet */
-    static boolean safeDelete(File file) { //TODO: test this
+    static boolean safeDelete(File file) {
         boolean isInGitlet = file.getPath().contains(".gitlet");
         boolean isInGitletCWD = (new File(file.getParentFile(), ".gitlet")).isDirectory();
         if (!isInGitlet && !isInGitletCWD) {
