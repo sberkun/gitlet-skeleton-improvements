@@ -26,7 +26,7 @@ import java.util.List;
  *
  *  @author P. N. Hilfinger
  */
-class Utils {
+class OldUtils {
 
     /** The length of a complete SHA-1 UID as a hexadecimal numeral. */
     static final int UID_LENGTH = 40;
