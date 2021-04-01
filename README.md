@@ -56,7 +56,7 @@ Affected functions are:
 
 It now errors instead of returning null, since students should always be confidant that their file is a directory. If they're not, it's better to check file.isDirectory() rather than waiting for the NullPointerException.
 
-Also, it returns an Array now instead of a List. If someone wants a list, they can turn it into a list themselves.
+Also, it returns an Array now instead of a List. If someone wants a List, they can turn it into a List themselves.
 
 ### Removed link annotations on join functions
 

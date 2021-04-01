@@ -33,10 +33,11 @@ class Utils {
     /** The length of a complete SHA-1 UID as a hexadecimal numeral. */
     static final int UID_LENGTH = 40;
 
-    /** Returns the SHA-1 hash of VAL.
-     * If you want to hash multiple things together,
-     * use the concat() function */
-    static String sha1(byte[] val) { //TODO: test this, also with empty string/byte
+    /** Returns the SHA-1 hash of VAL. To take the SHA-1 of
+     *  an object, serialize() the object first.
+     *  If you want to hash multiple things together,
+     *  use the concat() function */
+    static String sha1(byte[] val) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-1");
             Formatter result = new Formatter();
@@ -74,7 +75,7 @@ class Utils {
                 throw new IllegalArgumentException("Cannot concatenate null");
             } else {
                 throw new IllegalArgumentException("Utils.concat() can"
-                    + " only be used on byte[] or Strings. For general objects,"
+                        + " only be used on byte[] or Strings. For general objects,"
                         + " please serialize() them first.");
             }
         }
@@ -90,11 +91,11 @@ class Utils {
     }
 
     /** Returns a byte array containing the serialized contents of OBJ. */
-    static byte[] serialize(Serializable obj) { //TODO: test error messages
+    static byte[] serialize(Serializable obj) {
         if (obj instanceof File) {
             throw new IllegalArgumentException("Do not serialize or write File objects!"
-                + " Instead, please get the contents of the file with Utils.readContents."
-                + " If you're trying to copy a file, use Utils.copyFile.");
+                    + " Instead, please get the contents of the file with Utils.readContents."
+                    + " If you're trying to copy a file, use Utils.copyFile.");
         }
         try {
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -103,7 +104,8 @@ class Utils {
             objectStream.close();
             return stream.toByteArray();
         } catch (IOException ex) {
-            throw error("Serialization error. Please make sure this class is Serializable: "
+            throw new IllegalArgumentException(
+                    "Serialization error. Please make sure this class is Serializable: "
                     + ex.getMessage());
         }
     }
@@ -120,7 +122,7 @@ class Utils {
         if (!isInGitlet && !isInGitletCWD) {
             throw new IllegalArgumentException(
                     "File to be deleted is not in .gitlet "
-                    + "or in .gitlet working directory: " + file.getPath());
+                            + "or in .gitlet working directory: " + file.getPath());
         }
         if (file.isDirectory()) {
             throw new IllegalArgumentException("File to be deleted is a directory: "
@@ -136,7 +138,7 @@ class Utils {
      * file if it exists. Throws an exception if the source doesn't exist,
      * or if either file is a directory.
      */
-    static void copyFile(File source, File destination) { //TODO: test this
+    static void copyFile(File source, File destination) {
         if (!source.exists()) {
             throw new IllegalArgumentException("Source file does not exist: " + source.getPath());
         }
@@ -145,7 +147,7 @@ class Utils {
         }
         if (destination.isDirectory()) {
             throw new IllegalArgumentException(
-                "Destination file is a directory: " + destination.getPath());
+                    "Destination file is a directory: " + destination.getPath());
         }
         try {
             Files.copy(source.toPath(), destination.toPath(), StandardCopyOption.REPLACE_EXISTING);
@@ -159,16 +161,16 @@ class Utils {
     /** Return the entire contents of FILE as a byte array.  FILE must
      *  be a normal file.  Throws IllegalArgumentException
      *  in case of problems. */
-    static byte[] readContents(File file) { //TODO test error messages
-        if (!file.exists()) {
-            throw new IllegalArgumentException("File does not exist: " + file.getPath());
-        }
-        if (file.isDirectory()) {
-            throw new IllegalArgumentException("File is a directory: " + file.getPath());
-        }
+    static byte[] readContents(File file) {
         try {
             return Files.readAllBytes(file.toPath());
         } catch (IOException ex) {
+            if (!file.exists()) {
+                throw new IllegalArgumentException("File does not exist: " + file.getPath());
+            }
+            if (file.isDirectory()) {
+                throw new IllegalArgumentException("File is a directory: " + file.getPath());
+            }
             throw new IllegalArgumentException(ex.getMessage());
         }
     }
@@ -177,16 +179,24 @@ class Utils {
      *  needed. If you want to write multiple things together, use the
      *  concat() function */
     static void writeContents(File file, byte[] contents) {
-        if (file.isDirectory()) {
-            throw new IllegalArgumentException("Cannot overwrite directory: "
-                    + file.getPath());
-        }
         try {
             BufferedOutputStream str =
-                new BufferedOutputStream(Files.newOutputStream(file.toPath()));
+                    new BufferedOutputStream(Files.newOutputStream(file.toPath()));
             str.write(contents);
             str.close();
         } catch (IOException ex) {
+            if (file.isDirectory()) {
+                throw new IllegalArgumentException("Cannot overwrite directory: "
+                        + file.getPath());
+            }
+            if (!file.getParentFile().exists()) {
+                throw new IllegalArgumentException("File's parent directory does not exist: "
+                        + file.getPath());
+            }
+            if (!file.getParentFile().isDirectory()) {
+                throw new IllegalArgumentException("File's parent is not a directory: "
+                        + file.getPath());
+            }
             throw new IllegalArgumentException(ex.getMessage());
         }
     }
@@ -194,12 +204,12 @@ class Utils {
     /** Like readContents, but returns a String. I would avoid using this
      *  for arbitrary CWD files, since if the file is not txt (like an
      *  image file), this gives you garbage. */
-    static String readContentsAsString(File file) {
+    static String readString(File file) {
         return new String(readContents(file), StandardCharsets.UTF_8);
     }
 
     /** Like writeContents, but writes a String. */
-    static void writeContentsAsString(File file, String contents) {
+    static void writeString(File file, String contents) {
         writeContents(file, contents.getBytes(StandardCharsets.UTF_8));
     }
 
@@ -209,7 +219,7 @@ class Utils {
                                                  Class<T> expectedClass) {
         try {
             ObjectInputStream in =
-                new ObjectInputStream(new FileInputStream(file));
+                    new ObjectInputStream(new FileInputStream(file));
             T result = expectedClass.cast(in.readObject());
             in.close();
             return result;
@@ -217,8 +227,13 @@ class Utils {
             String exMessage = ex.getMessage();
             if (exMessage.startsWith("invalid stream header")) {
                 throw new IllegalArgumentException("You're reading with readObject, "
-                    + "but the file was not written with writeObject. Please check that "
-                    + "this is the right file. " + exMessage);
+                        + "but the file was not written with writeObject. Please check that "
+                        + "this is the right file.\n" + exMessage);
+            }
+            if (exMessage.contains("local class incompatible")) {
+                throw new IllegalArgumentException(exMessage
+                        + "\nTypically deleting the .gitlet directory and restarting with"
+                        + " gitlet init will fix this error.");
             }
             throw new IllegalArgumentException(ex.getMessage());
         } catch (ClassCastException | ClassNotFoundException ex) {
@@ -249,14 +264,14 @@ class Utils {
 
     /* OTHER FILE UTILITIES */
 
-    /** Return the concatentation of FIRST and OTHERS into a File designator,
+    /** Return the concatenation of FIRST and OTHERS into a File designator,
      *  analogous to the java.nio.file.Paths.get(String, String[])
      *  method. */
     static File join(String first, String... others) {
         return Paths.get(first, others).toFile();
     }
 
-    /** Return the concatentation of FIRST and OTHERS into a File designator,
+    /** Return the concatenation of FIRST and OTHERS into a File designator,
      *  analogous to the java.nio.file.Paths.#get(String, String[])
      *  method. */
     static File join(File first, String... others) {
@@ -272,3 +287,4 @@ class Utils {
     }
 
 }
+
