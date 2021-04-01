@@ -16,12 +16,27 @@ Note that this helps reduce an entire class of errors that I've seen students ru
 
 Affected functions are:
  - `sha1(Object... vals)` has been replaced by `sha1(byte[] val)` and `sha1(String val)`.
- - `writeContents(File file, Object... contents)` has been replaced by `writeContents(File file, byte[] val)` and `writeContentsAsString(File file, String val)`.
+ - `writeContents(File file, Object... contents)` has been replaced by `writeContents(File file, byte[] val)` and `writeString(File file, String val)`.
  - `error(String msg, Object... args)` has been replaced by `error(String msg)`.
 
 Remaining variadic functions are:
  - `concat(Object... vals)` hopefully has good enough error messages that it doesn't cause pain
  - `join(String first, String... others)` and `join(File first, String... others)` don't cause pain, so I'm letting them stay
+
+### Improved error messages
+
+Now, most functions should give actual information about what's wrong, instead of "mUsT bE a nOrMaL fIlE".
+
+Affected functions are:
+ - `concat(Object... vals)` (new function)
+ - `serialize(Serializable obj)` (and `writeObject(File file, Serializable obj)` as a result)
+ - `safeDelete(File file)`
+ - `copyFile(File source, File destination)` (new function)
+ - `readContents(File file)`, `writeContents(File file, byte[] contents)` (and String/Object equivalents as a result)
+ - `readObject(File file, Class<T> expectedClass)`
+
+These new error messages are the primary reason why I did this rewrite in the first place; hopefully, they'll help students fix errors more quickly, and reduce time spent on Ed/OH/Discord. Some of the error messages are direct answers to posts I've seen multiple times on Ed.
+
 
 ### Removed several functions
 
@@ -39,17 +54,12 @@ This is a basic enough operation that it should be provided to students, rather 
 
 The main difference is that safeDelete can also be used to delete files in the `.gitlet` folder, so students won't have to use `file.delete()` anywhere.
 
-### Improved error messages
+### Renamed readContentsAsString to readString, and added writeString
 
-Now, most functions should give actual information about what's wrong, instead of "mUsT bE a nOrMaL fIlE".
-
-Affected functions are:
- - `concat(Object... vals)` (new function)
- - `serialize(Serializable obj)` (and `writeObject(File file, Serializable obj)` as a result)
- - `safeDelete(File file)`
- - `copyFile(File source, File destination)` (new function)
- - `readContents(File file)`, `writeContents(File file, byte[] contents)` (and String equivalents as a result)
- - `readObject(File file, Class<T> expectedClass)`
+Now, the naming is consistent:
+ - For `byte[]`, use `readContents` and `writeContents`
+ - For `String`, use `readString` and `writeString`
+ - For `Object`, use `readObject` and `writeObject`
 
 
 ### Changed plainFileNamesIn 
