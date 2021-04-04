@@ -92,11 +92,6 @@ class Utils {
 
     /** Returns a byte array containing the serialized contents of OBJ. */
     static byte[] serialize(Serializable obj) {
-        if (obj instanceof File) {
-            throw new IllegalArgumentException("Do not serialize or write File objects!"
-                    + " Instead, please get the contents of the file with Utils.readContents."
-                    + " If you're trying to copy a file, use Utils.copyFile.");
-        }
         try {
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             ObjectOutputStream objectStream = new ObjectOutputStream(stream);
@@ -106,7 +101,7 @@ class Utils {
         } catch (IOException ex) {
             throw new IllegalArgumentException(
                     "Serialization error. Please make sure this class is Serializable: "
-                    + ex.getMessage());
+                            + ex.getMessage());
         }
     }
 
@@ -268,14 +263,32 @@ class Utils {
      *  analogous to the java.nio.file.Paths.get(String, String[])
      *  method. */
     static File join(String first, String... others) {
-        return Paths.get(first, others).toFile();
+        try {
+            return Paths.get(first, others).toFile();
+        } catch (NullPointerException ex) {
+            StringBuilder msg = new StringBuilder("One of the arguments to join is null: (");
+            if (first == null) {
+                msg.append("null");
+            } else {
+                msg.append('"').append(first).append('"');
+            }
+            for (String str : others) {
+                if (str == null) {
+                    msg.append(", null");
+                } else {
+                    msg.append(", \"").append(str).append('"');
+                }
+            }
+            msg.append(")");
+            throw new IllegalArgumentException(msg.toString());
+        }
     }
 
     /** Return the concatenation of FIRST and OTHERS into a File designator,
      *  analogous to the java.nio.file.Paths.#get(String, String[])
      *  method. */
     static File join(File first, String... others) {
-        return Paths.get(first.getPath(), others).toFile();
+        return join(first.getPath(), others);
     }
 
 
@@ -287,4 +300,3 @@ class Utils {
     }
 
 }
-

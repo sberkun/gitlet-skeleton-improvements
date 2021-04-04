@@ -34,6 +34,7 @@ Affected functions are:
  - `copyFile(File source, File destination)` (new function)
  - `readContents(File file)`, `writeContents(File file, byte[] contents)` (and String/Object equivalents as a result)
  - `readObject(File file, Class<T> expectedClass)`
+ - `join(String first, String... others)` (and `join(File first, String... others)` as a result)
 
 These new error messages are the primary reason why I did this rewrite in the first place; hopefully, they'll help students fix errors more quickly, and reduce time spent on Ed/OH/Discord. Some of the error messages are direct answers to posts I've seen multiple times on Ed.
 
