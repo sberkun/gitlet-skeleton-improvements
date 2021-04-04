@@ -8,9 +8,9 @@ As a student working on Gitlet in Spring 2021, I found the provided Utils.java f
 
 
 
-### Replacing variadic function with single arg functions, and adding concat
+### Replaced variadic functions with single arg functions, and added concat
 
-The liberal use of variadic functions is a plague upon society, and also can by confusing for students who have never seen them before. In order to remedy this, all the variadic functions are now nice single arg functions, and the `concat` function has been added for when students need to write or hash multiple things together.
+The liberal use of variadic functions is a plague upon society, and also can by confusing for students who have never seen them before. In order to remedy this, many of the old variadic functions are now nice single arg functions, and the `concat` function has been added for when students need to write or hash multiple things together.
 
 Note that this helps reduce an entire class of errors that I've seen students run into: putting the wrong type into variadic `Object...` functions, such as putting a Commit into sha1. The whole point of a type system is to eliminate this kind of error, so it's unfortunate that they were variadic in the first place.
 
@@ -18,10 +18,11 @@ Affected functions are:
  - `sha1(Object... vals)` has been replaced by `sha1(byte[] val)` and `sha1(String val)`.
  - `writeContents(File file, Object... contents)` has been replaced by `writeContents(File file, byte[] val)` and `writeString(File file, String val)`.
  - `error(String msg, Object... args)` has been replaced by `error(String msg)`.
+ - `message(String msg, Object... args)` has been removed.
 
 Remaining variadic functions are:
- - `concat(Object... vals)` hopefully has good enough error messages that it doesn't cause pain
- - `join(String first, String... others)` and `join(File first, String... others)` don't cause pain, so I'm letting them stay
+ - `concat(Object... vals)` hopefully has good enough error messages that it doesn't cause pain.
+ - `join(String first, String... others)` and `join(File first, String... others)` aren't `Object...` variadic, so I'm letting them stay.
 
 ### Improved error messages
 
@@ -47,11 +48,11 @@ These functions I felt were unnecessary, or at least didn't pull thier weight. M
  - `plainFilenamesIn(String dir)`
  - `message(String msg, Object... args)` (not an overload, but still unnecessary)
 
-### Addition of a copyFile method
+### Added a copyFile method
 
-This is a basic enough operation that it should be provided to students, rather than making them look up how to do it themselves. 
+This is a basic enough operation that it should be provided to students, rather than making them look up how to do it themselves. Also, the improved error messages will hopefully help with debugging.
 
-### Changing restrictedDelete to safeDelete
+### Changed restrictedDelete to safeDelete
 
 The main difference is that safeDelete can also be used to delete files in the `.gitlet` folder, so students won't have to use `file.delete()` anywhere.
 

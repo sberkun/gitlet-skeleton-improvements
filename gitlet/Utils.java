@@ -292,9 +292,11 @@ class Utils {
     }
 
 
-    /* MESSAGES AND ERROR REPORTING */
+    /* ERROR REPORTING */
 
-    /** Return a GitletException with the given message. */
+    /** Return a GitletException with the given message.
+     *  The intended use is for you to throw error(msg) when Gitlet
+     *  encounters an error, and then to catch the GitletException in Main. */
     static GitletException error(String msg) {
         return new GitletException(msg);
     }
