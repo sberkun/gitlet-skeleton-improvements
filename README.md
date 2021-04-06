@@ -56,6 +56,11 @@ This is a basic enough operation that it should be provided to students, rather 
 
 The main difference is that safeDelete can also be used to delete files in the `.gitlet` folder, so students won't have to use `file.delete()` anywhere.
 
+### Disallowed serialization of File objects
+
+One common mistake students make is to `sha1(serialize(file))`, thinking that this serializes the file contents. By erroring when they make that mistake, hopefully it saves them the headache of wondering why they get the same sha1 for different versions of a file.
+
+
 ### Renamed readContentsAsString to readString, and added writeString
 
 Now, the naming is consistent:

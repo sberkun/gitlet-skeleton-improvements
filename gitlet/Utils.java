@@ -36,7 +36,7 @@ class Utils {
     /** Returns the SHA-1 hash of VAL. To take the SHA-1 of
      *  an object, serialize() the object first.
      *  If you want to hash multiple things together,
-     *  use the concat() function */
+     *  use the concat() function. */
     static String sha1(byte[] val) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-1");
@@ -58,10 +58,9 @@ class Utils {
     /* SERIALIZATION UTILITIES */
 
     /** Concatenates several byte[] or Strings into one byte[], which
-     * can then be used in sha1() or writeContents()
-     * Example usage: sha1(concat(fileContentBytes, "I like cheese"))
-     * Example usage: writeContents(file, concat("cool beans", moreBytes))
-     */
+     *  can then be used in sha1() or writeContents()
+     *  Example usage: sha1(concat(fileContentBytes, "I like cheese"))
+     *  Example usage: writeContents(file, concat("cool beans", moreBytes)) */
     static byte[] concat(Object... values) {
         int totalLength = 0;
         for (int a = 0; a < values.length; a++) {
@@ -90,8 +89,20 @@ class Utils {
         return result;
     }
 
-    /** Returns a byte array containing the serialized contents of OBJ. */
+    /** Returns a byte array containing the serialized contents of OBJ.
+     *
+     *  You are not allowed to call serialize(file) or writeObject(dest, file),
+     *  since that serializes the PATH of the file rather than the file itself.
+     *  If you want to take the sha1 of a file, for example, what you really
+     *  want to do is sha1(readContents(file))
+     *  If you you do indeed want to save or sha1 the path of a file, you can do
+     *  writeString(file.getPath()), or sha1(file.getPath()) */
     static byte[] serialize(Serializable obj) {
+        if (obj instanceof File) {
+            throw new IllegalArgumentException("Please do not call serialize or writeObject on"
+                + " File objects! You're most likely looking for readContents or copyFile."
+                + " See the comments of Utils.serialize for more details.");
+        }
         try {
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             ObjectOutputStream objectStream = new ObjectOutputStream(stream);
@@ -110,7 +121,10 @@ class Utils {
     /** Deletes FILE if it exists and is not a directory.  Returns true
      *  if FILE was deleted, and false otherwise.  Refuses to delete FILE
      *  and throws IllegalArgumentException unless the directory designated by
-     *  FILE also contains a directory named .gitlet, or file is in .gitlet */
+     *  FILE also contains a directory named .gitlet, or file is in .gitlet.
+     *
+     *  Note: Despite the name, safeDelete is not entirely safe. It can still
+     *  wipe out the files of whichever directory you run gitlet in. */
     static boolean safeDelete(File file) {
         boolean isInGitlet = file.getPath().contains(".gitlet");
         boolean isInGitletCWD = (new File(file.getParentFile(), ".gitlet")).isDirectory();
@@ -128,11 +142,9 @@ class Utils {
 
     /* FILE COPYING */
 
-    /**
-     * Copies a file from SOURCE to DESTINATION. Will overwrite destination
-     * file if it exists. Throws an exception if the source doesn't exist,
-     * or if either file is a directory.
-     */
+    /** Copies a file from SOURCE to DESTINATION. Will overwrite destination
+     *  file if it exists. Throws an exception if the source doesn't exist,
+     *  or if either file is a directory. */
     static void copyFile(File source, File destination) {
         if (!source.exists()) {
             throw new IllegalArgumentException("Source file does not exist: " + source.getPath());
@@ -154,7 +166,7 @@ class Utils {
     /* READING AND WRITING FILE CONTENTS */
 
     /** Return the entire contents of FILE as a byte array.  FILE must
-     *  be a normal file.  Throws IllegalArgumentException
+     *  not be a directory.  Throws IllegalArgumentException
      *  in case of problems. */
     static byte[] readContents(File file) {
         try {
@@ -209,7 +221,7 @@ class Utils {
     }
 
     /** Return an object of type T read from FILE, casting it to EXPECTEDCLASS.
-     *  Throws IllegalArgumentException in case of problems. */
+     *  Similar to readContents. */
     static <T extends Serializable> T readObject(File file,
                                                  Class<T> expectedClass) {
         try {
@@ -236,14 +248,14 @@ class Utils {
         }
     }
 
-    /** Write OBJ to FILE. */
+    /** Write OBJ to FILE; similar to writeContents. */
     static void writeObject(File file, Serializable obj) {
         writeContents(file, serialize(obj));
     }
 
     /* DIRECTORIES */
 
-    /** Returns a list of the names of all plain files in the directory DIR, in
+    /** Returns an array of the names of all plain files in the directory DIR, in
      *  lexicographic order as Java Strings. Errors if DIR does
      *  not denote a directory. */
     static String[] plainFilenamesIn(File dir) {
